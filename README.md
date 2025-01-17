@@ -5,6 +5,6 @@ A CLI-based performance dashboard for Raspberry Pi. Monitors CPU, memory, disk u
 ## Installation
 
 ```bash
-git clone https://github.com/yourusername/pi_full_monitor.git
+git clone https://github.com/exfil0/pi_full_monitor.git
 cd pi_full_monitor.git
 pip install .
