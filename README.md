@@ -5,6 +5,11 @@ Pi Full Monitor is a Python-based CLI tool designed for monitoring the performan
 
 ![Pi Full Monitor Banner](banner-pi-monitor.png)
 
+<video width="600" controls>
+    <source src="https://github.com/exfil0/pi_full_monitor/blob/main/demo.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
+
 - **Simple Installation**: Comes with a setup script to install all dependencies.
 - **Cross-Platform**: Designed for Raspberry Pi but can work on any Linux-based system.
 
