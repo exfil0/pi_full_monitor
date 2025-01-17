@@ -3,14 +3,6 @@ from rich.console import Console
 from rich.table import Table
 from .utils import format_size, get_top_processes
 
-def get_cpu_temperature():
-    """Retrieve the CPU temperature."""
-    temps = psutil.sensors_temperatures()
-    if "cpu_thermal" in temps:
-        return f"{temps['cpu_thermal'][0].current:.2f}°C"
-    else:
-        return "N/A"
-
 def main():
     console = Console()
 
@@ -24,8 +16,8 @@ def main():
 
         # CPU
         table.add_row("CPU Usage", f"{psutil.cpu_percent()}%")
-        table.add_row("CPU Temp", get_cpu_temperature())
-
+        table.add_row("CPU Temp", f"{psutil.sensors_temperatures().get('cpu_thermal', [{'current': 'N/A'}])[0]['current']}°C")
+        
         # Memory
         memory = psutil.virtual_memory()
         table.add_row("Memory Usage", f"{memory.percent}% ({format_size(memory.used)}/{format_size(memory.total)})")
