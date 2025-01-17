@@ -3,6 +3,8 @@
 ## Overview
 Pi Full Monitor is a Python-based CLI tool designed for monitoring the performance and health of a Raspberry Pi device in real-time. It provides insights into CPU usage, memory, disk, network activity, and running processes. The tool is built with a visually appealing dashboard using the `rich` library.
 
+![Pi Full Monitor Banner](banner-pi-monitor.png)
+
 ---
 
 ## Features
