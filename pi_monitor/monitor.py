@@ -2,7 +2,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.live import Live
 import psutil
-from utils import format_bytes, get_top_processes, check_device_status
+from .utils import format_bytes, get_top_processes, check_device_status
 
 
 def get_system_metrics():
