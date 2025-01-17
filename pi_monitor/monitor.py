@@ -1,127 +1,40 @@
 import psutil
-import platform
-import shutil
-import time
 from rich.console import Console
 from rich.table import Table
-from rich.panel import Panel
-from rich.live import Live
-from datetime import datetime
+from .utils import format_size, get_top_processes
 
-console = Console()
+def main():
+    console = Console()
 
-def get_system_info():
-    uname = platform.uname()
-    return {
-        "System": uname.system,
-        "Node Name": uname.node,
-        "Release": uname.release,
-        "Version": uname.version,
-        "Machine": uname.machine,
-        "Processor": uname.processor,
-    }
+    while True:
+        console.clear()
 
-def get_cpu_info():
-    cpu_freq = psutil.cpu_freq()
-    return {
-        "Usage (%)": psutil.cpu_percent(interval=0.5),
-        "Cores": psutil.cpu_count(logical=False),
-        "Threads": psutil.cpu_count(logical=True),
-        "Frequency (MHz)": round(cpu_freq.current, 2) if cpu_freq else "N/A",
-    }
+        # General system stats
+        table = Table(title="Raspberry Pi Performance Monitor", expand=True)
+        table.add_column("Metric", style="bold cyan")
+        table.add_column("Value", style="bold green")
 
-def get_memory_info():
-    mem = psutil.virtual_memory()
-    return {
-        "Total (GB)": round(mem.total / (1024**3), 2),
-        "Used (GB)": round(mem.used / (1024**3), 2),
-        "Available (GB)": round(mem.available / (1024**3), 2),
-        "Usage (%)": mem.percent,
-    }
+        # CPU
+        table.add_row("CPU Usage", f"{psutil.cpu_percent()}%")
+        table.add_row("CPU Temp", f"{psutil.sensors_temperatures().get('cpu_thermal', [{'current': 'N/A'}])[0]['current']}°C")
+        
+        # Memory
+        memory = psutil.virtual_memory()
+        table.add_row("Memory Usage", f"{memory.percent}% ({format_size(memory.used)}/{format_size(memory.total)})")
 
-def get_disk_info():
-    total, used, free = shutil.disk_usage("/")
-    return {
-        "Total (GB)": round(total / (1024**3), 2),
-        "Used (GB)": round(used / (1024**3), 2),
-        "Free (GB)": round(free / (1024**3), 2),
-    }
+        # Disk
+        disk = psutil.disk_usage('/')
+        table.add_row("Disk Usage", f"{disk.percent}% ({format_size(disk.used)}/{format_size(disk.total)})")
 
-def get_temperature():
-    try:
-        temps = psutil.sensors_temperatures()
-        if "cpu_thermal" in temps:
-            return f"{temps['cpu_thermal'][0].current}°C"
-        return "N/A"
-    except AttributeError:
-        return "N/A"
+        # Network
+        net = psutil.net_io_counters()
+        table.add_row("Network Sent", format_size(net.bytes_sent))
+        table.add_row("Network Received", format_size(net.bytes_recv))
 
-def get_usb_devices():
-    try:
-        usb_devices = [f"{dev.device} - {dev.name}" for dev in psutil.disk_partitions()]
-        return usb_devices if usb_devices else ["No USB devices connected"]
-    except Exception:
-        return ["Unable to fetch USB devices"]
+        console.print(table)
 
-def get_top_processes():
-    processes = []
-    for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent']):
-        try:
-            processes.append(proc.info)
-        except (psutil.NoSuchProcess, psutil.AccessDenied):
-            continue
-    # Sort processes by CPU usage
-    processes.sort(key=lambda x: x['cpu_percent'], reverse=True)
-    return processes[:5]
+        # Top processes
+        top_processes_table = get_top_processes()
+        console.print(top_processes_table)
 
-def build_dashboard():
-    table = Table(title=f"Raspberry Pi Dashboard - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    table.add_column("Category", justify="left", style="bold")
-    table.add_column("Details", justify="left")
-
-    # System Information
-    sys_info = get_system_info()
-    table.add_row("System Info", "\n".join([f"{k}: {v}" for k, v in sys_info.items()]))
-
-    # CPU Information
-    cpu_info = get_cpu_info()
-    table.add_row("CPU Info", "\n".join([f"{k}: {v}" for k, v in cpu_info.items()]))
-
-    # Memory Information
-    mem_info = get_memory_info()
-    table.add_row("Memory Info", "\n".join([f"{k}: {v}" for k, v in mem_info.items()]))
-
-    # Disk Information
-    disk_info = get_disk_info()
-    table.add_row("Disk Info", "\n".join([f"{k}: {v}" for k, v in disk_info.items()]))
-
-    # Temperature
-    table.add_row("Temperature", get_temperature())
-
-    # USB Devices
-    usb_devices = get_usb_devices()
-    table.add_row("USB Devices", "\n".join(usb_devices))
-
-    # Top Processes
-    top_processes = get_top_processes()
-    process_table = Table(title="Top Processes", expand=True)
-    process_table.add_column("PID", justify="right")
-    process_table.add_column("Name", justify="left")
-    process_table.add_column("CPU (%)", justify="right")
-    process_table.add_column("Memory (%)", justify="right")
-
-    for proc in top_processes:
-        process_table.add_row(
-            str(proc['pid']), proc['name'], f"{proc['cpu_percent']}%", f"{proc['memory_percent']}%"
-        )
-
-    return Panel(
-        table, title="Raspberry Pi Performance Monitor", expand=True
-    ), Panel(process_table, title="Resource-Intensive Processes", expand=True)
-
-if __name__ == "__main__":
-    with Live(auto_refresh=False, console=console, screen=True) as live:
-        while True:
-            dashboard, process_panel = build_dashboard()
-            live.update(Panel.fit(dashboard, process_panel), refresh=True)
-            time.sleep(1)
+        console.input("\nPress [bold cyan]Enter[/] to refresh...")
