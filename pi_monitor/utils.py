@@ -1,46 +1,32 @@
-# Updated utils.py
-
 import psutil
 from rich.table import Table
 
-def format_bytes(bytes_value):
+def format_size(size):
     """Convert bytes to a human-readable format."""
-    if bytes_value is None:
-        return "N/A"
-    for unit in ["B", "KB", "MB", "GB", "TB"]:
-        if bytes_value < 1024.0:
-            return f"{bytes_value:.2f} {unit}"
-        bytes_value /= 1024.0
+    for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+        if size < 1024:
+            return f"{size:.2f} {unit}"
+        size /= 1024
 
+def get_top_processes(limit=10):
+    """Get a table of top processes by CPU usage."""
+    processes = sorted(psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent']),
+                       key=lambda p: p.info['cpu_percent'],
+                       reverse=True)[:limit]
 
-def get_top_processes(limit=5):
-    """Retrieve top processes by CPU and memory usage."""
-    processes = []
-    for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent']):
+    table = Table(title="Top Processes", expand=True)
+    table.add_column("PID", style="bold cyan")
+    table.add_column("Name", style="bold green")
+    table.add_column("CPU %", style="bold yellow")
+    table.add_column("Memory %", style="bold magenta")
+
+    for proc in processes:
         try:
-            processes.append(proc.info)
+            table.add_row(str(proc.info['pid']),
+                          proc.info['name'],
+                          f"{proc.info['cpu_percent']:.2f}%",
+                          f"{proc.info['memory_percent']:.2f}%")
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             continue
 
-    processes.sort(key=lambda x: x['cpu_percent'], reverse=True)
-    return processes[:limit]
-
-
-def check_device_status():
-    """Check if specific devices are connected."""
-    devices = {
-        "RTL-SDR": "rtl_test",
-        "HackRF": "hackrf_info",
-        "Airspy": "airspy_info",
-        "BladeRF": "bladeRF-cli -e version",
-    }
-    statuses = {}
-    for device, command in devices.items():
-        try:
-            result = psutil.Popen(command, shell=True, stdout=psutil.PIPE, stderr=psutil.PIPE)
-            result.communicate(timeout=2)
-            statuses[device] = "Connected"
-        except Exception:
-            statuses[device] = "Disconnected"
-
-    return statuses
+    return table
