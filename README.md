@@ -19,8 +19,8 @@ Pi Full Monitor is a Python-based CLI tool designed for monitoring the performan
   - Network Activity (Sent and Received Data)
   - Top Processes by CPU and Memory Usage
 
- ### Device Monitoring
-The tool also monitors connected SDR devices:
+ ### ROADMAP
+The tool also will monitor connected SDR devices:
 - **RTL-SDR**: Checks if the RTL-SDR is connected using `rtl_test`.
 - **HackRF**: Monitors HackRF devices using `hackrf_info`.
 - **Airspy**: Detects Airspy devices with `airspy_info`.
