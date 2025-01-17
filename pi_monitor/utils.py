@@ -1,33 +1,46 @@
-### utils.py ###
+# Updated utils.py
+
 import psutil
-import subprocess
+from rich.table import Table
 
-
-def format_bytes(size):
+def format_bytes(bytes_value):
     """Convert bytes to a human-readable format."""
-    for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
-        if size < 1024:
-            return f"{size:.2f} {unit}"
-        size /= 1024
+    if bytes_value is None:
+        return "N/A"
+    for unit in ["B", "KB", "MB", "GB", "TB"]:
+        if bytes_value < 1024.0:
+            return f"{bytes_value:.2f} {unit}"
+        bytes_value /= 1024.0
 
 
 def get_top_processes(limit=5):
-    """Fetch top processes sorted by CPU and memory usage."""
+    """Retrieve top processes by CPU and memory usage."""
     processes = []
     for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent']):
-        processes.append(proc.info)
-    
+        try:
+            processes.append(proc.info)
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+
     processes.sort(key=lambda x: x['cpu_percent'], reverse=True)
     return processes[:limit]
 
 
-def check_device_status(command, device_name):
-    """Check if a device is connected using a CLI command."""
-    try:
-        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True, timeout=5)
-        if result.returncode == 0:
-            return f"{device_name}: Connected"
-        else:
-            return f"{device_name}: Not Connected"
-    except Exception as e:
-        return f"{device_name}: Error ({str(e)})"
+def check_device_status():
+    """Check if specific devices are connected."""
+    devices = {
+        "RTL-SDR": "rtl_test",
+        "HackRF": "hackrf_info",
+        "Airspy": "airspy_info",
+        "BladeRF": "bladeRF-cli -e version",
+    }
+    statuses = {}
+    for device, command in devices.items():
+        try:
+            result = psutil.Popen(command, shell=True, stdout=psutil.PIPE, stderr=psutil.PIPE)
+            result.communicate(timeout=2)
+            statuses[device] = "Connected"
+        except Exception:
+            statuses[device] = "Disconnected"
+
+    return statuses
