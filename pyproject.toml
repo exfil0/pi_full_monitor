@@ -5,9 +5,9 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pi-full-monitor"
 version = "1.0.0"
-description = "CLI dashboard for Raspberry Pi performance monitoring"
-authors = [{ name = "Your Name", email = "your-email@example.com" }]
+description = "A CLI dashboard for Raspberry Pi performance monitoring."
+authors = [{ name = "Karim Jaber", email = "me@karimjaber.net" }]
 dependencies = ["psutil", "rich"]
 
 [project.scripts]
-pi_full_monitor = "pi_full_monitor.cli:main"  # Adjust path to your main script
+pi_full_monitor = "pi_full_monitor.monitor:main"
