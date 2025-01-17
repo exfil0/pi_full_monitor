@@ -5,6 +5,9 @@ Pi Full Monitor is a Python-based CLI tool designed for monitoring the performan
 
 ![Pi Full Monitor Banner](banner-pi-monitor.png)
 
+- **Simple Installation**: Comes with a setup script to install all dependencies.
+- **Cross-Platform**: Designed for Raspberry Pi but can work on any Linux-based system.
+
 ---
 
 ## Features
@@ -15,8 +18,13 @@ Pi Full Monitor is a Python-based CLI tool designed for monitoring the performan
   - Disk Usage
   - Network Activity (Sent and Received Data)
   - Top Processes by CPU and Memory Usage
-- **Simple Installation**: Comes with a setup script to install all dependencies.
-- **Cross-Platform**: Designed for Raspberry Pi but can work on any Linux-based system.
+
+ ### Device Monitoring
+The tool also monitors connected SDR devices:
+- **RTL-SDR**: Checks if the RTL-SDR is connected using `rtl_test`.
+- **HackRF**: Monitors HackRF devices using `hackrf_info`.
+- **Airspy**: Detects Airspy devices with `airspy_info`.
+- **bladeRF**: Verifies bladeRF connectivity using `bladeRF-cli`.
 
 ---
 
